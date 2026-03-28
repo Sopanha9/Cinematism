@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { Film, Search, Menu, X } from "lucide-react";
-import tgContactImage from "../assets/tgcontact.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -199,7 +198,7 @@ const Navbar = () => {
                 Scan this QR code if you want to contact me.
               </p>
               <img
-                src={tgContactImage}
+                src="/qrcode.png"
                 alt="Telegram contact QR"
                 className="mt-4 mx-auto h-52 w-52 rounded-xl border border-white/15 bg-white object-contain"
               />
