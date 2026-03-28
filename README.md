@@ -75,3 +75,4 @@ VITE_TMDB_KEY=your_tmdb_api_key_here
 
 - TMDB API keys exposed in frontend apps are still visible in the browser, so use a key intended for client-side usage.
 - This product uses the TMDB API but is not endorsed or certified by TMDB.
+

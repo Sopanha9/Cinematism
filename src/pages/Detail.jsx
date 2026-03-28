@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Clock, Calendar, Play } from "lucide-react";
 import { getMovieDetails } from "../services/tmdb";
 import LoadingSpinner from "../components/LoadingSpinner";
+import VideoPlayer from "../components/VideoPlayer";
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 const TMDB_BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
@@ -131,6 +132,9 @@ const Detail = () => {
   const trailer = details.videos?.results?.find(
     (vid) => vid.site === "YouTube" && vid.type === "Trailer",
   );
+  const trailerUrl = trailer?.key
+    ? `https://www.youtube.com/watch?v=${trailer.key}`
+    : "";
   const streamSources =
     type === "tv"
       ? [
@@ -146,6 +150,12 @@ const Detail = () => {
             getUrl: () =>
               `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
           },
+          {
+            id: "youtube",
+            label: "Trailer (Video.js)",
+            getUrl: () => trailerUrl,
+            disabled: !trailerUrl,
+          },
         ]
       : [
           {
@@ -153,10 +163,17 @@ const Detail = () => {
             label: "Source 1",
             getUrl: () => `https://vidsrcme.ru/embed/movie?tmdb=${id}`,
           },
+          {
+            id: "youtube",
+            label: "Trailer (Video.js)",
+            getUrl: () => trailerUrl,
+            disabled: !trailerUrl,
+          },
         ];
   const selectedSource =
-    streamSources.find((source) => source.id === activeSource) ||
-    streamSources[0];
+    streamSources.find(
+      (source) => source.id === activeSource && !source.disabled,
+    ) || streamSources[0];
   const streamUrl = selectedSource.getUrl();
   const availableSeasons =
     type === "tv"
@@ -357,11 +374,12 @@ const Detail = () => {
                       <button
                         key={source.id}
                         onClick={() => setActiveSource(source.id)}
+                        disabled={source.disabled}
                         className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
                           activeSource === source.id
                             ? "bg-cinema-gold text-black border-cinema-gold"
                             : "bg-black/40 text-gray-200 border-white/20 hover:border-cinema-gold hover:text-cinema-gold"
-                        }`}
+                        } disabled:opacity-40 disabled:cursor-not-allowed`}
                       >
                         {source.label}
                       </button>
@@ -385,18 +403,27 @@ const Detail = () => {
                   </div>
 
                   <div className="aspect-video w-full rounded-xl overflow-hidden shadow-2xl border border-gray-800 bg-black relative">
-                    <iframe
-                      key={`${streamUrl}-${reloadNonce}`}
-                      src={streamUrl}
-                      title="Streaming player"
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-                      referrerPolicy="origin-when-cross-origin"
-                      allowFullScreen
-                      className="absolute top-0 left-0 w-full h-full"
-                    ></iframe>
+                    {activeSource === "youtube" && streamUrl ? (
+                      <div
+                        key={`${streamUrl}-${reloadNonce}`}
+                        className="absolute top-0 left-0 w-full h-full"
+                      >
+                        <VideoPlayer src={streamUrl} />
+                      </div>
+                    ) : (
+                      <iframe
+                        key={`${streamUrl}-${reloadNonce}`}
+                        src={streamUrl}
+                        title="Streaming player"
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                        referrerPolicy="origin-when-cross-origin"
+                        allowFullScreen
+                        className="absolute top-0 left-0 w-full h-full"
+                      ></iframe>
+                    )}
                   </div>
                   <div className="mt-3 p-3 rounded-lg border border-white/10 bg-black/30">
                     <p className="text-sm text-gray-300">
