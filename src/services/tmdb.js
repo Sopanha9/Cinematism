@@ -17,11 +17,32 @@ export const getPopular = async (type = "movie", page = 1) => {
   return response.data;
 };
 
+export const getTrending = async (type = "movie", timeWindow = "week") => {
+  const response = await tmdbApi.get(`/trending/${type}/${timeWindow}`, {
+    params: {},
+  });
+  return response.data;
+};
+
 export const searchMovies = async (query, page = 1) => {
   const response = await tmdbApi.get(`/search/movie`, {
     params: { query, page },
   });
   return response.data;
+};
+
+export const searchMulti = async (query, page = 1) => {
+  const response = await tmdbApi.get(`/search/multi`, {
+    params: { query, page },
+  });
+  // Filter to only movies and TV shows (remove people)
+  const results = (response.data.results || []).filter(
+    (item) => item.media_type === "movie" || item.media_type === "tv",
+  );
+  return {
+    ...response.data,
+    results,
+  };
 };
 
 export const getMovieDetails = async (id, type = "movie") => {
@@ -46,6 +67,13 @@ export const getAnimeShows = async (page = 1) => {
       with_original_language: "ja",
       sort_by: "popularity.desc",
     },
+  });
+  return response.data;
+};
+
+export const getSimilar = async (id, type = "movie") => {
+  const response = await tmdbApi.get(`/${type}/${id}/similar`, {
+    params: { page: 1 },
   });
   return response.data;
 };

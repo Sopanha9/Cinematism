@@ -1,13 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Film, Search, Menu, X } from "lucide-react";
+import { Film, Search, Menu, X, Heart, Clock } from "lucide-react";
+import { useWatchlist } from "../context/WatchlistContext";
+import { useViewingHistory } from "../hooks/useViewingHistory";
+import { searchMulti } from "../services/tmdb";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const searchTimeoutRef = useRef(null);
   const navigate = useNavigate();
+  const { watchlist } = useWatchlist();
+  const { history } = useViewingHistory();
 
   useEffect(() => {
     if (!showContactModal) return;
@@ -21,6 +30,53 @@ const Navbar = () => {
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, [showContactModal]);
+
+  // Handle search suggestions
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (query.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    // Debounce search suggestions
+    setLoadingSuggestions(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const data = await searchMulti(query);
+        const suggestionItems = (data.results || [])
+          .filter((item) => item?.id && (item.title || item.name))
+          .slice(0, 8) // Show top 8 suggestions
+          .map((item) => ({
+            id: item.id,
+            title: item.title || item.name,
+            type: item.media_type,
+            posterPath: item.poster_path,
+          }));
+        setSuggestions(suggestionItems);
+        setShowSuggestions(true);
+      } catch (err) {
+        console.error("Error fetching suggestions:", err);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }, 300); // 300ms debounce
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    navigate(`/search?q=${encodeURIComponent(suggestion.title)}`);
+    setSearchQuery("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -74,6 +130,32 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <Link
+              to="/watchlist"
+              className="relative px-3 py-1.5 rounded-full text-sm font-semibold border border-white/20 text-gray-200 hover:border-red-500 hover:text-red-500 transition-colors flex items-center gap-2"
+              title="My Watchlist"
+            >
+              <Heart className="h-4 w-4" />
+              <span>Watchlist</span>
+              {watchlist.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {watchlist.length > 99 ? "99+" : watchlist.length}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="/history"
+              className="relative px-3 py-1.5 rounded-full text-sm font-semibold border border-white/20 text-gray-200 hover:border-[--color-cinema-gold] hover:text-[--color-cinema-gold] transition-colors flex items-center gap-2"
+              title="Recently Viewed"
+            >
+              <Clock className="h-4 w-4" />
+              <span>History</span>
+              {history.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[--color-cinema-gold] text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {history.length > 99 ? "99+" : history.length}
+                </span>
+              )}
+            </Link>
             <button
               onClick={() => setShowContactModal(true)}
               className="px-3 py-1.5 rounded-full text-sm font-semibold border border-white/20 text-gray-200 hover:border-[--color-cinema-gold] hover:text-[--color-cinema-gold] transition-colors"
@@ -85,7 +167,11 @@ const Navbar = () => {
                 type="text"
                 placeholder="Search movies..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchInputChange}
+                onFocus={() =>
+                  searchQuery.trim().length >= 2 && setShowSuggestions(true)
+                }
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 className="bg-[--color-cinema-darker] text-white border border-gray-700 rounded-full py-1.5 pl-4 pr-10 focus:outline-none focus:border-[--color-cinema-gold] transition-colors w-64"
               />
               <button
@@ -94,6 +180,43 @@ const Navbar = () => {
               >
                 <Search className="h-5 w-5" />
               </button>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[--color-cinema-darker]/95 backdrop-blur-md border border-white/20 rounded-xl shadow-2xl z-20 max-h-96 overflow-y-auto">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={`${suggestion.type}-${suggestion.id}`}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/15 transition-all duration-200 border-b border-white/5 last:border-0"
+                    >
+                      {suggestion.posterPath && (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w92${suggestion.posterPath}`}
+                          alt={suggestion.title}
+                          className="w-8 h-12 object-cover rounded flex-shrink-0"
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                      )}
+                      <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-white truncate">
+                          {suggestion.title}
+                        </p>
+                        <p className="text-xs text-gray-300">
+                          {suggestion.type === "tv" ? "TV Show" : "Movie"}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Loading State */}
+              {showSuggestions && loadingSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[--color-cinema-darker]/95 backdrop-blur-md border border-white/20 rounded-xl p-4 text-center shadow-2xl">
+                  <p className="text-sm text-gray-300">Searching...</p>
+                </div>
+              )}
             </form>
           </div>
 
@@ -145,6 +268,26 @@ const Navbar = () => {
               Anime
             </Link>
 
+            <Link
+              to="/watchlist"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:text-red-500 flex items-center gap-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <Heart className="h-4 w-4" />
+              <span>
+                Watchlist {watchlist.length > 0 && `(${watchlist.length})`}
+              </span>
+            </Link>
+
+            <Link
+              to="/history"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:text-[--color-cinema-gold] flex items-center gap-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <Clock className="h-4 w-4" />
+              <span>History {history.length > 0 && `(${history.length})`}</span>
+            </Link>
+
             <button
               onClick={() => {
                 setShowContactModal(true);
@@ -160,7 +303,11 @@ const Navbar = () => {
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchInputChange}
+                onFocus={() =>
+                  searchQuery.trim().length >= 2 && setShowSuggestions(true)
+                }
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 className="bg-[--color-cinema-darker] border border-gray-700 rounded-full py-2 pl-4 pr-10 w-full focus:outline-none focus:border-[--color-cinema-gold]"
               />
               <button
@@ -169,6 +316,39 @@ const Navbar = () => {
               >
                 <Search className="h-5 w-5" />
               </button>
+
+              {/* Mobile Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-3 right-3 mt-2 bg-[--color-cinema-darker]/95 backdrop-blur-md border border-white/20 rounded-xl shadow-2xl z-20 max-h-80 overflow-y-auto">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={`${suggestion.type}-${suggestion.id}`}
+                      onClick={() => {
+                        handleSuggestionClick(suggestion);
+                        setIsOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/15 transition-all duration-200 border-b border-white/5 last:border-0"
+                    >
+                      {suggestion.posterPath && (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w92${suggestion.posterPath}`}
+                          alt={suggestion.title}
+                          className="w-6 h-9 object-cover rounded flex-shrink-0"
+                          onError={(e) => (e.target.style.display = "none")}
+                        />
+                      )}
+                      <div className="flex-1 text-left">
+                        <p className="text-xs font-semibold text-white truncate">
+                          {suggestion.title}
+                        </p>
+                        <p className="text-xs text-gray-300">
+                          {suggestion.type === "tv" ? "TV Show" : "Movie"}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </form>
           </div>
         </div>

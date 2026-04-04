@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, Clock, Calendar, Play } from "lucide-react";
+import { ArrowLeft, Star, Clock, Calendar, Play, Heart } from "lucide-react";
 import { getMovieDetails } from "../services/tmdb";
+import { useViewingHistory } from "../hooks/useViewingHistory";
+import { useWatchlist } from "../context/WatchlistContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import VideoPlayer from "../components/VideoPlayer";
 
@@ -11,6 +13,8 @@ const TMDB_BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
 const Detail = () => {
   const { type, id } = useParams();
   const navigate = useNavigate();
+  const { addToHistory } = useViewingHistory();
+  const { isInWatchlist, toggleWatchlist } = useWatchlist();
 
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,10 +41,7 @@ const Detail = () => {
       return;
     }
 
-    const shouldPreferSource2 =
-      type === "tv" && details.original_language === "zh";
-
-    setActiveSource(shouldPreferSource2 ? "vidsrcto" : "vidsrcme");
+    setActiveSource("vidsrcme");
     setReloadNonce(0);
   }, [details, type]);
 
@@ -53,6 +54,16 @@ const Detail = () => {
 
         const data = await getMovieDetails(id, actualType);
         setDetails(data);
+
+        // Track viewing in history
+        addToHistory({
+          id: parseInt(id),
+          title: data.title || data.name,
+          posterPath: data.poster_path,
+          releaseDate: data.release_date || data.first_air_date,
+          rating: data.vote_average,
+          type: actualType,
+        });
       } catch (err) {
         console.error("Error fetching details:", err);
         setError("Failed to load details. The item might not exist.");
@@ -140,15 +151,9 @@ const Detail = () => {
       ? [
           {
             id: "vidsrcme",
-            label: "Source 1",
+            label: "VidSrc",
             getUrl: () =>
               `https://vidsrcme.ru/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`,
-          },
-          {
-            id: "vidsrcto",
-            label: "Source 2",
-            getUrl: () =>
-              `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
           },
           {
             id: "youtube",
@@ -160,7 +165,7 @@ const Detail = () => {
       : [
           {
             id: "vidsrcme",
-            label: "Source 1",
+            label: "VidSrc",
             getUrl: () => `https://vidsrcme.ru/embed/movie?tmdb=${id}`,
           },
           {
@@ -286,13 +291,44 @@ const Detail = () => {
             {/* Watch Player */}
             <div className="mb-10">
               {!isWatching ? (
-                <button
-                  onClick={() => setIsWatching(true)}
-                  className="flex items-center gap-2 bg-cinema-gold text-black px-8 py-4 rounded-full font-bold text-lg hover:brightness-110 transition-all shadow-[0_0_20px_rgba(255,193,7,0.3)] hover:shadow-[0_0_30px_rgba(255,193,7,0.5)] active:scale-95"
-                >
-                  <Play className="w-6 h-6 fill-current" />
-                  Watch Now
-                </button>
+                <div className="flex gap-4 items-center">
+                  <button
+                    onClick={() => setIsWatching(true)}
+                    className="flex items-center gap-2 bg-cinema-gold text-black px-8 py-4 rounded-full font-bold text-lg hover:brightness-110 transition-all shadow-[0_0_20px_rgba(255,193,7,0.3)] hover:shadow-[0_0_30px_rgba(255,193,7,0.5)] active:scale-95"
+                  >
+                    <Play className="w-6 h-6 fill-current" />
+                    Watch Now
+                  </button>
+                  <button
+                    onClick={() =>
+                      toggleWatchlist({
+                        id: parseInt(id),
+                        title: title,
+                        posterPath: details.poster_path,
+                        type: type,
+                        releaseDate: releaseDate,
+                        rating: details.vote_average,
+                      })
+                    }
+                    className="flex items-center gap-2 bg-black/50 hover:bg-black/75 text-white px-6 py-4 rounded-full font-semibold transition-all border border-white/20 hover:border-red-500"
+                    title={
+                      isInWatchlist(parseInt(id), type)
+                        ? "Remove from watchlist"
+                        : "Add to watchlist"
+                    }
+                  >
+                    <Heart
+                      className={`w-6 h-6 transition-colors ${
+                        isInWatchlist(parseInt(id), type)
+                          ? "fill-red-500 text-red-500"
+                          : "text-white"
+                      }`}
+                    />
+                    <span className="hidden sm:inline">
+                      {isInWatchlist(parseInt(id), type) ? "Saved" : "Save"}
+                    </span>
+                  </button>
+                </div>
               ) : (
                 <div className="w-full max-w-4xl animate-fade-in">
                   {type === "tv" && (

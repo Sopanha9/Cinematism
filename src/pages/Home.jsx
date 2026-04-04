@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from "react";
 import HeroBanner from "../components/HeroBanner";
 import MovieGrid from "../components/MovieGrid";
-import { getPopular, getTVShows, getAnimeShows } from "../services/tmdb";
+import {
+  getPopular,
+  getTVShows,
+  getAnimeShows,
+  getTrending,
+} from "../services/tmdb";
 
 const MAX_TMDB_PAGES = 500;
+
+// Ensure items have proper type field for consistency
+const ensureType = (items, defaultType = "movie") => {
+  return (items || []).map((item) => ({
+    ...item,
+    type:
+      item.type ||
+      item.media_type ||
+      (item.title ? "movie" : "tv") ||
+      defaultType,
+  }));
+};
 
 const getVisiblePages = (currentPage, totalPages) => {
   if (totalPages <= 7) {
@@ -38,6 +55,7 @@ const getVisiblePages = (currentPage, totalPages) => {
 const Home = ({ mode = "home" }) => {
   const [primaryItems, setPrimaryItems] = useState([]);
   const [secondaryItems, setSecondaryItems] = useState([]);
+  const [trendingItems, setTrendingItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,13 +74,15 @@ const Home = ({ mode = "home" }) => {
         setError(null);
 
         if (mode === "home") {
-          const [moviesData, tvData] = await Promise.all([
+          const [moviesData, tvData, trendingData] = await Promise.all([
             getPopular("movie", 1),
             getTVShows(1),
+            getTrending("movie", "week"),
           ]);
 
-          setPrimaryItems(moviesData.results || []);
-          setSecondaryItems(tvData.results || []);
+          setPrimaryItems(ensureType(moviesData.results, "movie"));
+          setSecondaryItems(ensureType(tvData.results, "tv"));
+          setTrendingItems(ensureType(trendingData.results, "movie"));
           setTotalPages(1);
           return;
         }
@@ -75,8 +95,11 @@ const Home = ({ mode = "home" }) => {
 
         const fetchCategory = fetchMap[mode] || fetchMap.movies;
         const response = await fetchCategory();
-        setPrimaryItems(response.results || []);
+        const defaultType =
+          mode === "tv" ? "tv" : mode === "anime" ? "tv" : "movie";
+        setPrimaryItems(ensureType(response.results, defaultType));
         setSecondaryItems([]);
+        setTrendingItems([]);
         setTotalPages(Math.min(response.total_pages || 1, MAX_TMDB_PAGES));
       } catch (err) {
         console.error("Error fetching home data:", err);
@@ -133,12 +156,20 @@ const Home = ({ mode = "home" }) => {
         />
 
         {mode === "home" && (
-          <MovieGrid
-            items={gridSecondaryItems}
-            title="Popular TV Shows"
-            loading={loading}
-            loadingCount={10}
-          />
+          <>
+            <MovieGrid
+              items={gridSecondaryItems}
+              title="Popular TV Shows"
+              loading={loading}
+              loadingCount={10}
+            />
+            <MovieGrid
+              items={trendingItems.slice(0, 10)}
+              title="Trending This Week"
+              loading={loading}
+              loadingCount={10}
+            />
+          </>
         )}
 
         {isPagedMode && !loading && totalPages > 1 && (

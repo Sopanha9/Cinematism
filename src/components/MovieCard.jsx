@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Star, Heart } from "lucide-react";
+import { useWatchlist } from "../context/WatchlistContext";
 
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 const FALLBACK_POSTER = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -20,12 +21,23 @@ const MovieCard = ({
   type = "movie",
   releaseDate,
 }) => {
+  const { watchlist, isInWatchlist, toggleWatchlist } = useWatchlist();
+  const inWatchlist = isInWatchlist(id, type);
+
   const imageUrl = posterPath
     ? `${TMDB_IMAGE_BASE}${posterPath}`
     : FALLBACK_POSTER;
 
   // Extract year
   const year = releaseDate ? new Date(releaseDate).getFullYear() : "";
+
+  const handleWatchlistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const itemData = { id, title, posterPath, rating, type, releaseDate };
+    console.log("Toggling watchlist for:", itemData);
+    toggleWatchlist(itemData);
+  };
 
   return (
     <Link to={`/detail/${type}/${id}`} className="block group">
@@ -40,6 +52,21 @@ const MovieCard = ({
             e.currentTarget.src = FALLBACK_POSTER;
           }}
         />
+        {/* Watchlist button */}
+        <button
+          onClick={handleWatchlistClick}
+          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/75 transition-all hover:scale-110"
+          title={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+        >
+          <Heart
+            className={`w-5 h-5 transition-colors ${
+              inWatchlist
+                ? "fill-red-500 text-red-500"
+                : "text-white hover:text-red-500"
+            }`}
+          />
+        </button>
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
           <h3 className="text-white font-bold text-lg leading-tight mb-1">
             {title}
