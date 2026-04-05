@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Clock, Calendar, Play, Heart } from "lucide-react";
 import { getMovieDetails } from "../services/tmdb";
+import {
+  getVidKingMovieEmbedUrl,
+  getVidKingTvEmbedUrl,
+} from "../services/vidking";
 import { useWatchlist } from "../context/WatchlistContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import VideoPlayer from "../components/VideoPlayer";
@@ -22,7 +26,7 @@ const Detail = () => {
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
   const [maxEpisodes, setMaxEpisodes] = useState(1);
-  const [activeSource, setActiveSource] = useState("vidsrcme");
+  const [activeSource, setActiveSource] = useState("vidking");
   const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
@@ -30,7 +34,7 @@ const Detail = () => {
     setSeason(1);
     setEpisode(1);
     setMaxEpisodes(1);
-    setActiveSource("vidsrcme");
+    setActiveSource("vidking");
     setReloadNonce(0);
   }, [id, type]);
 
@@ -39,7 +43,7 @@ const Detail = () => {
       return;
     }
 
-    setActiveSource("vidsrcme");
+    setActiveSource("vidking");
     setReloadNonce(0);
   }, [details, type]);
 
@@ -134,14 +138,31 @@ const Detail = () => {
   const trailerUrl = trailer?.key
     ? `https://www.youtube.com/watch?v=${trailer.key}`
     : "";
+
+  const vidSrcTvUrl =
+    type === "tv"
+      ? `https://vidsrcme.ru/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`
+      : "";
+
+  const vidSrcMovieUrl = `https://vidsrcme.ru/embed/movie?tmdb=${id}`;
+
   const streamSources =
     type === "tv"
       ? [
           {
-            id: "vidsrcme",
-            label: "VidSrc",
+            id: "vidking",
+            label: "VidKing",
             getUrl: () =>
-              `https://vidsrcme.ru/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`,
+              getVidKingTvEmbedUrl(id, season, episode, {
+                color: "f5c518",
+                nextEpisode: true,
+                episodeSelector: true,
+              }),
+          },
+          {
+            id: "vidsrc",
+            label: "VidSrc",
+            getUrl: () => vidSrcTvUrl,
           },
           {
             id: "youtube",
@@ -152,9 +173,17 @@ const Detail = () => {
         ]
       : [
           {
-            id: "vidsrcme",
+            id: "vidking",
+            label: "VidKing",
+            getUrl: () =>
+              getVidKingMovieEmbedUrl(id, {
+                color: "f5c518",
+              }),
+          },
+          {
+            id: "vidsrc",
             label: "VidSrc",
-            getUrl: () => `https://vidsrcme.ru/embed/movie?tmdb=${id}`,
+            getUrl: () => vidSrcMovieUrl,
           },
           {
             id: "youtube",

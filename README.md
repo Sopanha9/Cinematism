@@ -1,6 +1,6 @@
 # Cinematism
 
-Cinematism is a movie discovery app built with React, Vite, Tailwind CSS, and the TMDB API. It includes browsing for movies, TV shows, anime, search, title details, and a contact QR modal in the navbar.
+Cinematism is a movie discovery app built with React, Vite, Tailwind CSS, and the TMDB API. It includes browsing for movies, TV shows, search, title details, and a contact QR modal in the navbar.
 
 ## Tech Stack
 
@@ -25,10 +25,11 @@ npm install
 cp .env.example .env
 ```
 
-3. Add your TMDB API key to `.env`:
+3. Add your environment values to `.env`:
 
 ```env
 VITE_TMDB_KEY=your_tmdb_api_key_here
+VITE_VIDKING_BASE_URL=https://www.vidking.net
 ```
 
 4. Start the app:
@@ -52,7 +53,7 @@ npm run dev
 
 ## Vercel Deployment
 
-This project includes `vercel.json` with a rewrite rule so React Router routes like `/movies`, `/anime`, `/search`, and `/detail/:type/:id` work correctly on refresh.
+This project includes `vercel.json` with a rewrite rule so React Router routes like `/movies`, `/tv`, `/search`, and `/detail/:type/:id` work correctly on refresh.
 
 ### Deploy Steps
 
@@ -75,4 +76,3 @@ VITE_TMDB_KEY=your_tmdb_api_key_here
 
 - TMDB API keys exposed in frontend apps are still visible in the browser, so use a key intended for client-side usage.
 - This product uses the TMDB API but is not endorsed or certified by TMDB.
-

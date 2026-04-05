@@ -239,13 +239,6 @@ const Navbar = () => {
             >
               TV Shows
             </Link>
-            <Link
-              to="/anime"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-[--color-cinema-gold]"
-              onClick={() => setIsOpen(false)}
-            >
-              Anime
-            </Link>
 
             <Link
               to="/watchlist"

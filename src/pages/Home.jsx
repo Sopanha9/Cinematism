@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HeroBanner from "../components/HeroBanner";
 import MovieGrid from "../components/MovieGrid";
-import {
-  getPopular,
-  getTVShows,
-  getAnimeShows,
-  getTrending,
-} from "../services/tmdb";
+import { getPopular, getTVShows, getTrending } from "../services/tmdb";
 
 const MAX_TMDB_PAGES = 500;
 
@@ -90,13 +85,11 @@ const Home = ({ mode = "home" }) => {
         const fetchMap = {
           movies: () => getPopular("movie", currentPage),
           tv: () => getTVShows(currentPage),
-          anime: () => getAnimeShows(currentPage),
         };
 
         const fetchCategory = fetchMap[mode] || fetchMap.movies;
         const response = await fetchCategory();
-        const defaultType =
-          mode === "tv" ? "tv" : mode === "anime" ? "tv" : "movie";
+        const defaultType = mode === "tv" ? "tv" : "movie";
         setPrimaryItems(ensureType(response.results, defaultType));
         setSecondaryItems([]);
         setTrendingItems([]);
@@ -134,7 +127,6 @@ const Home = ({ mode = "home" }) => {
   const titleByMode = {
     movies: "Trending Movies",
     tv: "Popular TV Shows",
-    anime: "Popular Anime",
   };
   const primaryTitle = titleByMode[mode] || "Trending Movies";
   const visiblePages = getVisiblePages(currentPage, totalPages);

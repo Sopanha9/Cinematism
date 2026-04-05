@@ -59,18 +59,6 @@ export const getTVShows = async (page = 1) => {
   return response.data;
 };
 
-export const getAnimeShows = async (page = 1) => {
-  const response = await tmdbApi.get("/discover/tv", {
-    params: {
-      page,
-      with_genres: "16",
-      with_original_language: "ja",
-      sort_by: "popularity.desc",
-    },
-  });
-  return response.data;
-};
-
 export const getSimilar = async (id, type = "movie") => {
   const response = await tmdbApi.get(`/${type}/${id}/similar`, {
     params: { page: 1 },

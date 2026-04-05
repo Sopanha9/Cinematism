@@ -30,7 +30,7 @@ function App() {
           </p>
           <p className="mt-2 text-sm text-gray-400 px-4">
             Note: We use free APIs and free streaming sources, so some movies or
-            anime may be unavailable or fail to play. Sorry for this issue -
+            TV shows may be unavailable or fail to play. Sorry for this issue -
             most titles should still work normally.
           </p>
         </footer>
