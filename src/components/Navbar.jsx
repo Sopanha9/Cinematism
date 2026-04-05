@@ -118,12 +118,6 @@ const Navbar = () => {
               >
                 TV Shows
               </Link>
-              <Link
-                to="/anime"
-                className="px-3 py-2 rounded-md text-sm font-medium hover:text-[--color-cinema-gold] transition-colors"
-              >
-                Anime
-              </Link>
             </div>
           </div>
 

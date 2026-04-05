@@ -17,7 +17,6 @@ function App() {
             <Route path="/" element={<Home mode="home" />} />
             <Route path="/movies" element={<Home mode="movies" />} />
             <Route path="/tv" element={<Home mode="tv" />} />
-            <Route path="/anime" element={<Home mode="anime" />} />
             <Route path="/search" element={<Search />} />
             <Route path="/watchlist" element={<Watchlist />} />
             <Route path="/detail/:type/:id" element={<Detail />} />
