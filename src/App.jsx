@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Detail from "./pages/Detail";
 import Watchlist from "./pages/Watchlist";
-import History from "./pages/History";
 
 function App() {
   return (
@@ -21,7 +20,6 @@ function App() {
             <Route path="/anime" element={<Home mode="anime" />} />
             <Route path="/search" element={<Search />} />
             <Route path="/watchlist" element={<Watchlist />} />
-            <Route path="/history" element={<History />} />
             <Route path="/detail/:type/:id" element={<Detail />} />
           </Routes>
         </main>

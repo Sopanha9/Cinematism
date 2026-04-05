@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Film, Search, Menu, X, Heart, Clock } from "lucide-react";
+import { Film, Search, Menu, X, Heart } from "lucide-react";
 import { useWatchlist } from "../context/WatchlistContext";
-import { useViewingHistory } from "../hooks/useViewingHistory";
 import { searchMulti } from "../services/tmdb";
 
 const Navbar = () => {
@@ -16,7 +15,6 @@ const Navbar = () => {
   const searchTimeoutRef = useRef(null);
   const navigate = useNavigate();
   const { watchlist } = useWatchlist();
-  const { history } = useViewingHistory();
 
   useEffect(() => {
     if (!showContactModal) return;
@@ -143,19 +141,6 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
-            <Link
-              to="/history"
-              className="relative px-3 py-1.5 rounded-full text-sm font-semibold border border-white/20 text-gray-200 hover:border-[--color-cinema-gold] hover:text-[--color-cinema-gold] transition-colors flex items-center gap-2"
-              title="Recently Viewed"
-            >
-              <Clock className="h-4 w-4" />
-              <span>History</span>
-              {history.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[--color-cinema-gold] text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                  {history.length > 99 ? "99+" : history.length}
-                </span>
-              )}
-            </Link>
             <button
               onClick={() => setShowContactModal(true)}
               className="px-3 py-1.5 rounded-full text-sm font-semibold border border-white/20 text-gray-200 hover:border-[--color-cinema-gold] hover:text-[--color-cinema-gold] transition-colors"
@@ -277,15 +262,6 @@ const Navbar = () => {
               <span>
                 Watchlist {watchlist.length > 0 && `(${watchlist.length})`}
               </span>
-            </Link>
-
-            <Link
-              to="/history"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-[--color-cinema-gold] flex items-center gap-2"
-              onClick={() => setIsOpen(false)}
-            >
-              <Clock className="h-4 w-4" />
-              <span>History {history.length > 0 && `(${history.length})`}</span>
             </Link>
 
             <button

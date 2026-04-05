@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, Clock, Calendar, Play, Heart } from "lucide-react";
 import { getMovieDetails } from "../services/tmdb";
-import { useViewingHistory } from "../hooks/useViewingHistory";
 import { useWatchlist } from "../context/WatchlistContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import VideoPlayer from "../components/VideoPlayer";
@@ -13,7 +12,6 @@ const TMDB_BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
 const Detail = () => {
   const { type, id } = useParams();
   const navigate = useNavigate();
-  const { addToHistory } = useViewingHistory();
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
 
   const [details, setDetails] = useState(null);
@@ -54,16 +52,6 @@ const Detail = () => {
 
         const data = await getMovieDetails(id, actualType);
         setDetails(data);
-
-        // Track viewing in history
-        addToHistory({
-          id: parseInt(id),
-          title: data.title || data.name,
-          posterPath: data.poster_path,
-          releaseDate: data.release_date || data.first_air_date,
-          rating: data.vote_average,
-          type: actualType,
-        });
       } catch (err) {
         console.error("Error fetching details:", err);
         setError("Failed to load details. The item might not exist.");
