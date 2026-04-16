@@ -63,7 +63,7 @@ export default function Navbar() {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass-nav' : 'bg-gradient-to-b from-black/80 to-transparent'}`}>
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
           <Film className="w-6 h-6 text-[#e50914]" />
           <span className="font-display text-2xl tracking-widest text-white">
             CINE<span className="text-[#e50914]">MATISM</span>
@@ -75,7 +75,7 @@ export default function Navbar() {
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
-              href={href}
+              to={href}
               className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors rounded-md hover:bg-white/5"
             >
               {label}
@@ -140,7 +140,7 @@ export default function Navbar() {
           </div>
 
           {/* Watchlist */}
-          <Link href="/watchlist" className="relative p-2 text-gray-300 hover:text-white transition-colors">
+          <Link to="/watchlist" className="relative p-2 text-gray-300 hover:text-white transition-colors">
             <Heart className="w-5 h-5" />
             {watchlist.length > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-[#e50914] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
@@ -162,7 +162,7 @@ export default function Navbar() {
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
-              href={href}
+              to={href}
               className="block px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors"
               onClick={() => setMenuOpen(false)}
             >
@@ -170,7 +170,7 @@ export default function Navbar() {
             </Link>
           ))}
           <Link
-            href="/watchlist"
+            to="/watchlist"
             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md"
             onClick={() => setMenuOpen(false)}
           >

@@ -78,14 +78,14 @@ export default function HeroBanner({ items }: Props) {
           {/* Buttons */}
           <div className="flex items-center gap-3 fade-in-up fade-in-up-delay-3">
             <Link
-              href={`/detail/${type}/${movie.id}`}
+              to={`/detail/${type}/${movie.id}`}
               className="flex items-center gap-2 bg-[#e50914] hover:bg-[#c40812] text-white font-bold px-7 py-3 rounded-md transition-colors text-sm"
             >
               <Play className="w-4 h-4 fill-current" />
               Watch Now
             </Link>
             <Link
-              href={`/detail/${type}/${movie.id}`}
+              to={`/detail/${type}/${movie.id}`}
               className="flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white font-semibold px-7 py-3 rounded-md transition-colors border border-white/10 text-sm"
             >
               <Info className="w-4 h-4" />

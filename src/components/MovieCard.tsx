@@ -36,7 +36,7 @@ export default function MovieCard({ item, rank }: Props) {
         </span>
       )}
 
-      <Link href={`/detail/${type}/${item.id}`} className={`block relative overflow-hidden rounded-md bg-[#141414] movie-card ${rank !== undefined ? 'w-[120px] sm:w-[140px] flex-shrink-0' : 'w-full'}`} style={{ aspectRatio: '2/3' }}>
+      <Link to={`/detail/${type}/${item.id}`} className={`block relative overflow-hidden rounded-md bg-[#141414] movie-card ${rank !== undefined ? 'w-[120px] sm:w-[140px] flex-shrink-0' : 'w-full'}`} style={{ aspectRatio: '2/3' }}>
         <img
           src={posterUrl}
           alt={title}
