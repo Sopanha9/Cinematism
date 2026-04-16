@@ -96,13 +96,13 @@ export const getSimilar = async (id: string | number, type: string = 'movie') =>
 };
 
 export const getVidKingMovieUrl = (id: string | number) =>
-  `https://vidking.pro/embed/movie/${id}?color=e50914`;
+  `https://vidsrc.to/embed/movie/${id}`;
 
 export const getVidKingTvUrl = (id: string | number, season: number, episode: number) =>
-  `https://vidking.pro/embed/tv/${id}/${season}/${episode}?color=e50914`;
+  `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`;
 
 export const getVidSrcMovieUrl = (id: string | number) =>
-  `https://vidsrcme.ru/embed/movie?tmdb=${id}`;
+  `https://www.vidking.net/embed/movie/${id}?color=e50914`;
 
 export const getVidSrcTvUrl = (id: string | number, season: number, episode: number) =>
-  `https://vidsrcme.ru/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`;
+  `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?color=e50914&nextEpisode=true&episodeSelector=true`;
